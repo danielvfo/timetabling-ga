@@ -1,0 +1,30 @@
+{
+  "name": "timetabling-ga",
+  "version": "1.0.0",
+  "description": "An evolutive algorithm approach to the timetabling problem.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielvfo/timetabling-ga.git"
+  },
+  "keywords": [
+    "evolutionary",
+    "algorithms",
+    "evolutive",
+    "algorithm",
+    "genetic",
+    "algorithm",
+    "timetabling",
+    "class",
+    "schedule"
+  ],
+  "author": "Daniel Vieira Fragoso",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/danielvfo/timetabling-ga/issues"
+  },
+  "homepage": "https://github.com/danielvfo/timetabling-ga#readme"
+}
