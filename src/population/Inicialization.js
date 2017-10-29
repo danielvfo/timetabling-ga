@@ -8,7 +8,7 @@ module.exports = class Inicialization {
   createInicialPopulation() {
 
   };
-
+  
   setPopulationSize(size) {
     this.population_size = size;
   };
