@@ -1,6 +1,6 @@
 
 
-module.exports = class DNA {
+module.exports = class Gene {
   constructor() {};
 
   createGene() {

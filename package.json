@@ -27,5 +27,8 @@
   "bugs": {
     "url": "https://github.com/danielvfo/timetabling-ga/issues"
   },
-  "homepage": "https://github.com/danielvfo/timetabling-ga#readme"
+  "homepage": "https://github.com/danielvfo/timetabling-ga#readme",
+  "dependencies": {
+    "shuffle-array": "^1.0.1"
+  }
 }

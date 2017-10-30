@@ -1,12 +1,10 @@
+var inicialization = require('./src/population/Inicialization');
+inicialization = new inicialization();
 
+var classrooms = inicialization.inputToArrayClassrooms('/../../inputs/classrooms.csv');
+var subjects = inicialization.inputToArraySubjects('/../../inputs/subjects.csv');
+var professors = inicialization.inputToArrayProfessors('/../../inputs/professors.csv');
 
-var matrix = [
-  [1, 2, 3],
-  [4, 5, 6],
-  [7, 8, 9]
-];
-console.log(matrix[1][2]);
-
-var gene = {curso: 143, periodo: 01, grade: matrix};
-
-console.log(gene);
+console.log(classrooms);
+console.log(subjects);
+console.log(professors);
