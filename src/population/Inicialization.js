@@ -1,4 +1,5 @@
 const fs = require('fs');
+const shuffle = require('shuffle-array');
 
 module.exports = class Inicialization {
   constructor() {};
@@ -15,6 +16,7 @@ module.exports = class Inicialization {
         }
       }
     });
+    objects_array = shuffle(objects_array);
     return objects_array;
   };
   //Open and covert to an array of JS objects the subjects.csv file
@@ -30,6 +32,7 @@ module.exports = class Inicialization {
         }
       }
     });
+    objects_array = shuffle(objects_array);
     return objects_array;
   };
   //Open and covert to an array of JS objects the professors.csv file
@@ -45,6 +48,7 @@ module.exports = class Inicialization {
         }
       }
     });
+    objects_array = shuffle(objects_array);
     return objects_array;
   };
 
