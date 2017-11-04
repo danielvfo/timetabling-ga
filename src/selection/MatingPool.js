@@ -3,8 +3,6 @@
 module.exports = class MatingPool {
   constructor() {};
 
-  var mating_pool_size = 0;
-
   createMatingPool() {
 
   };

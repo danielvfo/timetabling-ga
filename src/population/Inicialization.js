@@ -11,8 +11,8 @@ module.exports = class Inicialization {
     array.forEach((item, index) => {
       if (index > 0) { //ignore the first line (table headers)
         var temp = item.split(';');
-        if (temp[0]) { //avoiding not include empty entries
-          objects_array.push({classroom: temp[0], time_window: temp[1], is_lab: temp[2], lab_type: temp[3], weekday: temp[4]});
+        if (temp[0]) { //avoiding to include empty entries
+          objects_array.push({id: temp[0], classroom: temp[1], time_window: temp[2], is_lab: temp[3], lab_type: temp[4], weekday: temp[5]});
         }
       }
     });
@@ -28,7 +28,7 @@ module.exports = class Inicialization {
     array.forEach((item, index) => {
       if (index > 0) { //ignore the first line (table headers)
         var temp = item.split(';');
-        if (temp[0]) { //avoiding not include empty entries
+        if (temp[0]) { //avoiding to include empty entries
           objects_array.push({id: temp[0], major: temp[1], semester: temp[2], subject: temp[3], description: temp[4], is_lab: temp[5], units: temp[6], lab_type: temp[7], shift: temp[8]});
         }
       }
@@ -45,7 +45,7 @@ module.exports = class Inicialization {
     array.forEach((item, index) => {
       if (index > 0) { //ignore the first line (table headers)
         var temp = item.split(';');
-        if (temp[0]) { //avoiding not include empty entries
+        if (temp[0]) { //avoiding to include empty entries
           objects_array.push({id: temp[0], professor: temp[1], units: temp[2], subject_id: temp[3]});
         }
       }
@@ -54,7 +54,4 @@ module.exports = class Inicialization {
     return objects_array;
   };
 
-  createInicialPopulation() {
-
-  };
 };
