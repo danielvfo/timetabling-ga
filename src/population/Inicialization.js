@@ -54,4 +54,33 @@ module.exports = class Inicialization {
     return objects_array;
   };
 
+  //Function to count the total number of units in subjects
+  countTotalNumberOfSubjectUnits(subjects) {
+    var total_units = 0;
+    subjects.forEach((subject) => {
+      total_units += subject.units;
+    });
+    return total_units;
+  };
+
+  //Function to count the total number of professors available units
+  countTotalNumberOfProfessorUnits(professors) {
+    var total_units = 0;
+    subjects.forEach((professor) => {
+      total_units += professor.units;
+    });
+    return total_units;
+  };
+
+  //Check if there are enough professor availability for the porposed number of subjects
+  hasEnoughProfessorsForSubjects(subjects, professors) {
+    total_professor_units = this.countTotalNumberOfProfessorUnits(professors);
+    total_subject_units = this.countTotalNumberOfSubjectUnits(subjects);
+    if (total_professor_units < total_subject_units) {
+      return false;
+    } else {
+      return true;
+    }
+  };
+
 };
