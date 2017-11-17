@@ -66,7 +66,7 @@ module.exports = class Inicialization {
   //Function to count the total number of professors available units
   countTotalNumberOfProfessorUnits(professors) {
     var total_units = 0;
-    subjects.forEach((professor) => {
+    professors.forEach((professor) => {
       total_units += professor.units;
     });
     return total_units;
@@ -74,8 +74,8 @@ module.exports = class Inicialization {
 
   //Check if there are enough professor availability for the porposed number of subjects
   hasEnoughProfessorsForSubjects(subjects, professors) {
-    total_professor_units = this.countTotalNumberOfProfessorUnits(professors);
-    total_subject_units = this.countTotalNumberOfSubjectUnits(subjects);
+    var total_professor_units = this.countTotalNumberOfProfessorUnits(professors);
+    var total_subject_units = this.countTotalNumberOfSubjectUnits(subjects);
     if (total_professor_units < total_subject_units) {
       return false;
     } else {
