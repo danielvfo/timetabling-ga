@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/danielvfo/timetabling-ga#readme",
   "dependencies": {
+    "node-in-parallel": "^1.0.3",
     "shuffle-array": "^1.0.1"
   }
 }

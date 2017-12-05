@@ -1,4 +1,5 @@
 const shuffle = require('shuffle-array');
+const forParallel = require('node-in-parallel');
 
 module.exports = class Gene {
 
@@ -91,12 +92,18 @@ module.exports = class Gene {
   timeWindowIsTaken(classroom, individual) {
     var counter = 0;
     if (individual) {
-      individual.forEach((item) => {
-        item.schedule.forEach((triplet) => {
+      individual.forEach((triplet) => {
+        if (triplet.classroom.constructor === Array) {
+          triplet.classroom.forEach((room) => {
+            if ((room.time_window == classroom.time_window) && (room.weekday == classroom.weekday)) {
+              counter++;
+            }
+          });
+        } else {
           if ((triplet.classroom.time_window == classroom.time_window) && (triplet.classroom.weekday == classroom.weekday)) {
             counter++;
           }
-        });
+        }
       });
     }
     if (counter) {
@@ -106,7 +113,7 @@ module.exports = class Gene {
     }
   };
 
-  //Fetch all compatible available classrooms for a given subject
+  //Fetch all compatible and available classrooms for a given subject
   fetchClassrooms(subject, classrooms, individual) {
     var suitable_classrooms = [];
     classrooms.forEach((classroom) => { //get all classrooms in which lab matches, shift matches  and time window is NOT taken
@@ -114,14 +121,198 @@ module.exports = class Gene {
         suitable_classrooms.push(classroom);
       }
     });
-    if (suitable_classrooms) { //if the suitable classrooms array is empty, throw error
+    if (suitable_classrooms[0]) { //if the suitable classrooms array is empty, throw error
       return suitable_classrooms;
     } else {
       throw e;
     }
   }
 
-  //
+  //Helper function for the "combineClassrooms" function. Fetches one classroom from the "suitable_classrooms" array
+  fetchSolo(suitable_classrooms) {
+    return this.getRandomObject(suitable_classrooms);
+  }
+
+  //Helper function for the "combineClassrooms" function. Fetches a pair of classrooms, in sequence, from the "suitable_classrooms" array
+  fetchPair(suitable_classrooms) {                         //In order to cobine the classrooms according to the number of units
+    var suitable_classrooms_copy = suitable_classrooms;    //of a given subject, this piece of code gets the first classroom in the
+    for (var i = 0; i < suitable_classrooms.length; i++) { //"suitable_classrooms" array and then it searches for another one where the
+      var combined_classrooms = [];                        //classroom ID is different, the classroom name is equal, the clasroom
+      combined_classrooms.push(suitable_classrooms[i]);    //time window is a sequence of the previously selected and the weekday
+      for (var j = 0; j < suitable_classrooms_copy.length; j++) { //of the classrooms is equal
+        if ((suitable_classrooms[i].id != suitable_classrooms_copy[j].id) && (suitable_classrooms[i].classroom == suitable_classrooms_copy[j].classroom) && (suitable_classrooms[i].time_window[0] == suitable_classrooms_copy[j].time_window[0]) && (Number(suitable_classrooms[i].time_window[1]) == Number(suitable_classrooms_copy[j].time_window[1]) + 1) && (suitable_classrooms[i].weekday == suitable_classrooms_copy[j].weekday)) {
+          combined_classrooms.push(suitable_classrooms_copy[j]);
+        }
+        if (combined_classrooms.length == 2) {
+          return combined_classrooms;
+        }
+      }
+    }
+    throw e;
+  }
+
+  //Helper function for the "combineClassrooms" function. Fetches a triplet of classrooms, in sequence, from the "suitable_classrooms" array
+  fetchTriplet(suitable_classrooms) {                      //In order to cobine the classrooms according to the number of units
+    var suitable_classrooms_copy = suitable_classrooms;    //of a given subject, this piece of code gets the first classroom in the
+    for (var i = 0; i < suitable_classrooms.length; i++) { //"suitable_classrooms" array and then it searches for another two where the
+      var combined_classrooms = [];                        //classroom ID is different, the classroom name is equal, the clasroom
+      combined_classrooms.push(suitable_classrooms[i]);    //time window is a sequence of the previously selected and the weekday
+      for (var j = 0; j < suitable_classrooms_copy.length; j++) { //of the classrooms is equal
+        if ((suitable_classrooms[i].id != suitable_classrooms_copy[j].id) && (suitable_classrooms[i].classroom == suitable_classrooms_copy[j].classroom) && (suitable_classrooms[i].time_window[0] == suitable_classrooms_copy[j].time_window[0]) && (Number(suitable_classrooms[i].time_window[1]) == Number(suitable_classrooms_copy[j].time_window[1]) + 1) && (suitable_classrooms[i].weekday == suitable_classrooms_copy[j].weekday)) {
+          combined_classrooms.push(suitable_classrooms_copy[j]);
+        }
+        if ((suitable_classrooms[i].id != suitable_classrooms_copy[j].id) && (suitable_classrooms[i].classroom == suitable_classrooms_copy[j].classroom) && (suitable_classrooms[i].time_window[0] == suitable_classrooms_copy[j].time_window[0]) && (Number(suitable_classrooms[i].time_window[1]) == Number(suitable_classrooms_copy[j].time_window[1]) + 2) && (suitable_classrooms[i].weekday == suitable_classrooms_copy[j].weekday)) {
+          combined_classrooms.push(suitable_classrooms_copy[j]);
+        }
+        if (combined_classrooms.length == 3) {
+          return combined_classrooms;
+        }
+      }
+    }
+    throw e;
+  }
+
+  //Helper function for the "combineClassrooms" function. It removes classrooms which have same day and time of a previously
+  //assigned classroom
+  removeSameDayAndTime(combination, suitable_classrooms){
+    suitable_classrooms.forEach((i) => {
+      combination.forEach((j) => {
+        if ((i.weekday == j.weekday) && (i.time_window == j.time_window)) {
+          this.popElement(suitable_classrooms, i);
+        }
+      });
+    });
+    return suitable_classrooms;
+  };
+
+  //Sorry for the looong function
+  //tl;dr: it selects and combine classrooms from the suitable_classrooms array for a given subject taking in
+  //account its number of units. For example: if it is a 4 units subject it needs 4 classrooms entries, even if it's
+  //the same classroom but in a different time window and/or a different weekday
+  combineClassrooms(subject, suitable_classrooms) {
+    var units = subject.units;
+    var combined_classrooms = [];
+    switch (units) {
+      case '1':
+        return this.fetchSolo(suitable_classrooms);
+
+      case '2':
+        return this.fetchPair(suitable_classrooms);
+
+      case '3':
+        return this.fetchTriplet(suitable_classrooms);
+
+      case '4':
+        var pair = this.fetchPair(suitable_classrooms);
+        pair.forEach((item) => {
+          combined_classrooms.push(item);
+          this.popElement(suitable_classrooms, item);
+        });
+        suitable_classrooms = this.removeSameDayAndTime(pair, suitable_classrooms);
+        var pair = this.fetchPair(suitable_classrooms);
+        pair.forEach((item) => {
+          combined_classrooms.push(item);
+        });
+        return combined_classrooms;
+
+      case '5':
+        var triplet = this.fetchTriplet(suitable_classrooms);
+        triplet.forEach((item) => {
+          combined_classrooms.push(item);
+          this.popElement(suitable_classrooms, item);
+        });
+        suitable_classrooms = this.removeSameDayAndTime(triplet, suitable_classrooms);
+        var pair = this.fetchPair(suitable_classrooms);
+        pair.forEach((item) => {
+          combined_classrooms.push(item);
+        });
+        return combined_classrooms;
+
+      case '6':
+        var triplet = this.fetchTriplet(suitable_classrooms);
+        triplet.forEach((item) => {
+          combined_classrooms.push(item);
+          this.popElement(suitable_classrooms, item);
+        });
+        suitable_classrooms = this.removeSameDayAndTime(triplet, suitable_classrooms);
+        var triplet = this.fetchTriplet(suitable_classrooms);
+        triplet.forEach((item) => {
+          combined_classrooms.push(item);
+        });
+        return combined_classrooms;
+
+      case '7':
+        var triplet = this.fetchTriplet(suitable_classrooms);
+        triplet.forEach((item) => {
+          combined_classrooms.push(item);
+          this.popElement(suitable_classrooms, item);
+        });
+        suitable_classrooms = this.removeSameDayAndTime(triplet, suitable_classrooms);
+        var triplet = this.fetchTriplet(suitable_classrooms);
+        triplet.forEach((item) => {
+          combined_classrooms.push(item);
+          this.popElement(suitable_classrooms, item);
+        });
+        suitable_classrooms = this.removeSameDayAndTime(triplet, suitable_classrooms);
+        combined_classrooms.push(this.fetchSolo(suitable_classrooms));
+        return combined_classrooms;
+    }
+    throw e;
+  }
+
+  //Link a subject with a set of combined classrooms or a single clasroom
+  linkSubjectClassrooms(subject, classrooms) {
+    var subject_classroom = {};
+    subject_classroom = {subject: subject, classroom: classrooms, professor: ''};
+    return subject_classroom;
+  }
+
+  //Check if a given professor has enough units for a subject supposed to link
+  hasEnoughUnits(professor, subjects) {
+    var units = 0;
+    if (subjects.constructor === Array) {
+      subjects.forEach((subject) => {
+        units += Number(subject.units);
+      });
+    } else {
+      units = Number(subjects.units);
+    }
+    if (Number(professor.units) >= Number(units)) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  //Remove an ID from the subject_id array within a professor
+  removePreference(professor, id) {
+    var subject_id_support = professor.subject_id;
+    subject_id_support.forEach((subject) => {
+      if (subject == id) {
+        this.popElement(subject_id_support, id);
+      }
+    });
+    professor.subject_id = subject_id_support;
+    return professor;
+  }
+
+  //Subtract the units from a given professor related to a subject supposed to link
+  subtractUnits(professor, subjects) {
+    var units = 0;
+    if (subjects.constructor === Array) {
+      subjects.forEach((subject) => {
+        units += Number(subject.units);
+      });
+    } else {
+        units = Number(subjects.units);
+    }
+    professor.units -= Number(units);
+    return professor;
+  };
+
+  //Update a given professor in a professors arrar. For example:
+  //When you remove a preference from a professor and you want to update the original array
+  //Or when you subtract availabe units from a certain professor
   updateProfessor(professors, professor) {
     professors.forEach((item) => {
       if (item.id == professor.id) {
@@ -134,103 +325,102 @@ module.exports = class Gene {
 
   //Get professors from the "professor_with_preferences" array who have remaining units but no more preferences
   getProfessorWithUnitsRemaining(professors_with_preferences) {
+    var professors = [];
     professors_with_preferences.forEach((professor) => {
       if ((professor.subject_id == '') && (professor.units > 0)) {
-        return this.popElement(professors_with_preferences, professor);
+        professors.push(this.popElement(professors_with_preferences, professor));
       }
     });
+    return professors;
   };
 
-  //Check if a subject is already taken. If yes, reuturn true, if no, return false
-  hasBond(subject, individual) {
-    if (individual) {
-      individual.forEach((item) => {
-        var counter = 0;
-        item.schedule.forEach((tuple) => {
-          if (tuple.subject.id == subject.id) {
-            counter++;
-            return true;
-          }
-        });
-        if (counter == 0) {
-          return false;
-        }
-      });
-    } else {
-        return false;
-    }
-  };
-
-  //Check if a given professor has enough units for a subject supposed to link
-  hasEnoughUnits(professor, subjects) {
-    var units = 0;
-    if (subjects.length > 1) {
-      subjects.forEach((subject) => {
-        units = units + subject.units;
-      });
-    } else {
-      units = subjects.units;
-    }
-    if (professor.units >= units) {
-      return true;
-    } else {
-        return false;
-    }
-  };
-
-  //Subtract the units from a given professor related to a subject supposed to link
-  subtractUnits(professor, subjects) {
-    var units = 0;
-    if (subjects.constructor === Array) {
-      subjects.forEach((subject) => {
-        units = units + subject.units;
-      });
-    } else {
-        units = subjects.units;
-    }
-    professor.units = professor.units - units;
-    return professor;
-  };
-
-  //Get the prefered subject searching by its id
-  getSubjectByID(subjects, desired_id) {
-    subjects.forEach((subject) => {
-      if (subject.id == desired_id) {
-        return subject;
+  //Wipe professors with no units remaining
+  removeNoUnitsProfessors(professors) {
+    professors.forEach((professor) => {
+      if (Number(professor.units) <= 0) {
+        this.popElement(professors, professor);
       }
     });
-    return undefined;
-  };
+    return professors;
+  }
 
-  //Check if a subject is a laboratory type
-  isLab(subject) {
-    if (subject.is_lab) {
-      return true;
-    } else {
-        return false;
-    }
-  };
+  // addToIndividual(subject_classroom_professor, individual) {
+  //   subject_classroom_professor.forEach((triplet) => {
+  //     if (individual.length == 0) {
+  //       individual.push({major: triplet.subject.major, semester: triplet.subject.semester, schedule: triplet});
+  //     } else {
+  //       individual.forEach((element, index) => {
+  //         if ((element.major == triplet.subject.major) && (element.semester == triplet.subject.semester)) { //same major, same semester
+  //           console.log(element.major + ' == ' + triplet.subject.major + ' && ' + element.semester + '==' + triplet.subject.semester);
+  //           individual[index].schedule.push(triplet);
+  //         } else { //new semester OR new major
+  //           individual.push({major: triplet.subject.major, semester: triplet.subject.semester, schedule: triplet});
+  //         }
+  //       });
+  //     }
+  //   });
+  //   return individual;
+  // }
 
+  // //Check if a subject is already taken. If yes, reuturn true, if no, return false
+  // hasBond(subject, individual) {
+  //   if (individual) {
+  //     individual.forEach((item) => {
+  //       var counter = 0;
+  //       item.schedule.forEach((tuple) => {
+  //         if (tuple.subject.id == subject.id) {
+  //           counter++;
+  //           return true;
+  //         }
+  //       });
+  //       if (counter == 0) {
+  //         return false;
+  //       }
+  //     });
+  //   } else {
+  //       return false;
+  //   }
+  // };
   //
-  linkProfessorWithSubject(professor, subjects) {
-    var professor_with_subject = [];
-    if (subjects.constructor === Array) {
-      subjects.forEach((subject) => {
-        professor_with_subject.push({subject: subject, professor: professor});
-      });
-    } else {
-        professor_with_subject.push({subject: subjects, professor: professor});
-    }
-    return professor_with_subject;
-  };
-
+  // //Get the prefered subject searching by its id
+  // getSubjectByID(subjects, desired_id) {
+  //   subjects.forEach((subject) => {
+  //     if (subject.id == desired_id) {
+  //       return subject;
+  //     }
+  //   });
+  //   return undefined;
+  // };
   //
-  linkProfessorSubjectWithClassroom(professor_with_subject, classroom) {
-    var professor_subject_classroom = [];
-    professor_with_subject.forEach((item) => {
-      professor_subject_classroom.push({subject: subject, professor: professor, classroom: classroom});
-    });
-    return professor_subject_classroom;
-  };
+  // //Check if a subject is a laboratory type
+  // isLab(subject) {
+  //   if (subject.is_lab) {
+  //     return true;
+  //   } else {
+  //       return false;
+  //   }
+  // };
+  //
+  // //
+  // linkProfessorWithSubject(professor, subjects) {
+  //   var professor_with_subject = [];
+  //   if (subjects.constructor === Array) {
+  //     subjects.forEach((subject) => {
+  //       professor_with_subject.push({subject: subject, professor: professor});
+  //     });
+  //   } else {
+  //       professor_with_subject.push({subject: subjects, professor: professor});
+  //   }
+  //   return professor_with_subject;
+  // };
+  //
+  // //
+  // linkProfessorSubjectWithClassroom(professor_with_subject, classroom) {
+  //   var professor_subject_classroom = [];
+  //   professor_with_subject.forEach((item) => {
+  //     professor_subject_classroom.push({subject: subject, professor: professor, classroom: classroom});
+  //   });
+  //   return professor_subject_classroom;
+  // };
 
 };
