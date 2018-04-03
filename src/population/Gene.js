@@ -16,7 +16,7 @@ module.exports = class Gene {
   //Get all the professors who have preferences from the original professors array
   getProfessorsWithPreferences(professors) {
     var professors_with_preferences = [];
-    professors.forEach((professor) => {
+    professors.map((professor) => {
       if (professor.subject_id) { //Professor has subjects preferences
         var aux = professor.subject_id.split('.');
         professor.subject_id = aux;
@@ -40,7 +40,7 @@ module.exports = class Gene {
   getSubjetComplement(subject, subjects) {
     try {
       var subject_complement;
-      subjects.forEach((item) => {
+      subjects.map((item) => {
         if ((item.id != subject.id) && (item.major == subject.major) && (item.subject == subject.subject)) {
           subject_complement = item;
         }
@@ -92,9 +92,9 @@ module.exports = class Gene {
   timeWindowIsTaken(classroom, individual) {
     var counter = 0;
     if (individual) {
-      individual.forEach((triplet) => {
+      individual.map((triplet) => {
         if (triplet.classroom.constructor === Array) {
-          triplet.classroom.forEach((room) => {
+          triplet.classroom.map((room) => {
             if ((room.time_window == classroom.time_window) && (room.weekday == classroom.weekday)) {
               counter++;
             }
@@ -116,7 +116,7 @@ module.exports = class Gene {
   //Fetch all compatible and available classrooms for a given subject
   fetchClassrooms(subject, classrooms, individual) {
     var suitable_classrooms = [];
-    classrooms.forEach((classroom) => { //get all classrooms in which lab matches, shift matches  and time window is NOT taken
+    classrooms.map((classroom) => { //get all classrooms in which lab matches, shift matches  and time window is NOT taken
       if ((this.labMatch(classroom, subject)) && (this.checkShiftMatch(classroom, subject)) && !(this.timeWindowIsTaken(classroom, individual))) {
         suitable_classrooms.push(classroom);
       }
@@ -175,8 +175,8 @@ module.exports = class Gene {
   //Helper function for the "combineClassrooms" function. It removes classrooms which have same day and time of a previously
   //assigned classroom
   removeSameDayAndTime(combination, suitable_classrooms){
-    suitable_classrooms.forEach((i) => {
-      combination.forEach((j) => {
+    suitable_classrooms.map((i) => {
+      combination.map((j) => {
         if ((i.weekday == j.weekday) && (i.time_window == j.time_window)) {
           this.popElement(suitable_classrooms, i);
         }
@@ -204,52 +204,52 @@ module.exports = class Gene {
 
       case '4':
         var pair = this.fetchPair(suitable_classrooms);
-        pair.forEach((item) => {
+        pair.map((item) => {
           combined_classrooms.push(item);
           this.popElement(suitable_classrooms, item);
         });
         suitable_classrooms = this.removeSameDayAndTime(pair, suitable_classrooms);
         var pair = this.fetchPair(suitable_classrooms);
-        pair.forEach((item) => {
+        pair.map((item) => {
           combined_classrooms.push(item);
         });
         return combined_classrooms;
 
       case '5':
         var triplet = this.fetchTriplet(suitable_classrooms);
-        triplet.forEach((item) => {
+        triplet.map((item) => {
           combined_classrooms.push(item);
           this.popElement(suitable_classrooms, item);
         });
         suitable_classrooms = this.removeSameDayAndTime(triplet, suitable_classrooms);
         var pair = this.fetchPair(suitable_classrooms);
-        pair.forEach((item) => {
+        pair.map((item) => {
           combined_classrooms.push(item);
         });
         return combined_classrooms;
 
       case '6':
         var triplet = this.fetchTriplet(suitable_classrooms);
-        triplet.forEach((item) => {
+        triplet.map((item) => {
           combined_classrooms.push(item);
           this.popElement(suitable_classrooms, item);
         });
         suitable_classrooms = this.removeSameDayAndTime(triplet, suitable_classrooms);
         var triplet = this.fetchTriplet(suitable_classrooms);
-        triplet.forEach((item) => {
+        triplet.map((item) => {
           combined_classrooms.push(item);
         });
         return combined_classrooms;
 
       case '7':
         var triplet = this.fetchTriplet(suitable_classrooms);
-        triplet.forEach((item) => {
+        triplet.map((item) => {
           combined_classrooms.push(item);
           this.popElement(suitable_classrooms, item);
         });
         suitable_classrooms = this.removeSameDayAndTime(triplet, suitable_classrooms);
         var triplet = this.fetchTriplet(suitable_classrooms);
-        triplet.forEach((item) => {
+        triplet.map((item) => {
           combined_classrooms.push(item);
           this.popElement(suitable_classrooms, item);
         });
@@ -271,7 +271,7 @@ module.exports = class Gene {
   hasEnoughUnits(professor, subjects) {
     var units = 0;
     if (subjects.constructor === Array) {
-      subjects.forEach((subject) => {
+      subjects.map((subject) => {
         units += Number(subject.units);
       });
     } else {
@@ -287,7 +287,7 @@ module.exports = class Gene {
   //Remove an ID from the subject_id array within a professor
   removePreference(professor, id) {
     var subject_id_support = professor.subject_id;
-    subject_id_support.forEach((subject) => {
+    subject_id_support.map((subject) => {
       if (subject == id) {
         this.popElement(subject_id_support, id);
       }
@@ -300,7 +300,7 @@ module.exports = class Gene {
   subtractUnits(professor, subjects) {
     var units = 0;
     if (subjects.constructor === Array) {
-      subjects.forEach((subject) => {
+      subjects.map((subject) => {
         units += Number(subject.units);
       });
     } else {
@@ -310,11 +310,11 @@ module.exports = class Gene {
     return professor;
   };
 
-  //Update a given professor in a professors arrar. For example:
+  //Update a given professor in a professors array. For example:
   //When you remove a preference from a professor and you want to update the original array
   //Or when you subtract availabe units from a certain professor
   updateProfessor(professors, professor) {
-    professors.forEach((item) => {
+    professors.map((item) => {
       if (item.id == professor.id) {
         this.popElement(professors, item);
         professors.push(professor);
@@ -326,7 +326,7 @@ module.exports = class Gene {
   //Get professors from the "professor_with_preferences" array who have remaining units but no more preferences
   getProfessorWithUnitsRemaining(professors_with_preferences) {
     var professors = [];
-    professors_with_preferences.forEach((professor) => {
+    professors_with_preferences.map((professor) => {
       if ((professor.subject_id == '') && (professor.units > 0)) {
         professors.push(this.popElement(professors_with_preferences, professor));
       }
@@ -336,7 +336,7 @@ module.exports = class Gene {
 
   //Wipe professors with no units remaining
   removeNoUnitsProfessors(professors) {
-    professors.forEach((professor) => {
+    professors.map((professor) => {
       if (Number(professor.units) <= 0) {
         this.popElement(professors, professor);
       }
@@ -345,11 +345,11 @@ module.exports = class Gene {
   }
 
   // addToIndividual(subject_classroom_professor, individual) {
-  //   subject_classroom_professor.forEach((triplet) => {
+  //   subject_classroom_professor.map((triplet) => {
   //     if (individual.length == 0) {
   //       individual.push({major: triplet.subject.major, semester: triplet.subject.semester, schedule: triplet});
   //     } else {
-  //       individual.forEach((element, index) => {
+  //       individual.map((element, index) => {
   //         if ((element.major == triplet.subject.major) && (element.semester == triplet.subject.semester)) { //same major, same semester
   //           console.log(element.major + ' == ' + triplet.subject.major + ' && ' + element.semester + '==' + triplet.subject.semester);
   //           individual[index].schedule.push(triplet);
@@ -365,9 +365,9 @@ module.exports = class Gene {
   // //Check if a subject is already taken. If yes, reuturn true, if no, return false
   // hasBond(subject, individual) {
   //   if (individual) {
-  //     individual.forEach((item) => {
+  //     individual.map((item) => {
   //       var counter = 0;
-  //       item.schedule.forEach((tuple) => {
+  //       item.schedule.map((tuple) => {
   //         if (tuple.subject.id == subject.id) {
   //           counter++;
   //           return true;
@@ -384,7 +384,7 @@ module.exports = class Gene {
   //
   // //Get the prefered subject searching by its id
   // getSubjectByID(subjects, desired_id) {
-  //   subjects.forEach((subject) => {
+  //   subjects.map((subject) => {
   //     if (subject.id == desired_id) {
   //       return subject;
   //     }
@@ -405,7 +405,7 @@ module.exports = class Gene {
   // linkProfessorWithSubject(professor, subjects) {
   //   var professor_with_subject = [];
   //   if (subjects.constructor === Array) {
-  //     subjects.forEach((subject) => {
+  //     subjects.map((subject) => {
   //       professor_with_subject.push({subject: subject, professor: professor});
   //     });
   //   } else {
@@ -417,7 +417,7 @@ module.exports = class Gene {
   // //
   // linkProfessorSubjectWithClassroom(professor_with_subject, classroom) {
   //   var professor_subject_classroom = [];
-  //   professor_with_subject.forEach((item) => {
+  //   professor_with_subject.map((item) => {
   //     professor_subject_classroom.push({subject: subject, professor: professor, classroom: classroom});
   //   });
   //   return professor_subject_classroom;

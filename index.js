@@ -17,7 +17,7 @@ var professors_with_preferences = gene.getProfessorsWithPreferences(professors);
 
 var individual = [];
 var c = 0;
-while (c<3) {
+while (subjects.length > 0) {
 var subject_classroom_professor = [];
 var selected_subjects = [];
 //Pick one random subject and find classrooms for it --------------------------------------------------------------------
@@ -58,9 +58,9 @@ if (subject_complement) {
 //-------------------------------------------------------------------------------------------------------------------------
 //Find a professor for the previously selected subjects -------------------------------------------------------------------
 var chosen_professor;
-professors_with_preferences.forEach((professor) => {
-  selected_subjects.forEach((subject) => {
-    professor.subject_id.forEach((id) => {
+professors_with_preferences.map((professor) => {
+  selected_subjects.map((subject) => {
+    professor.subject_id.map((id) => {
       if ((id == subject.id) && (gene.hasEnoughUnits(professor, selected_subjects))) {
         chosen_professor = professor;
         professor = gene.removePreference(professor, id);
@@ -74,7 +74,7 @@ professors_with_preferences.forEach((professor) => {
   });
 });
 if (!chosen_professor) {
-  professors.forEach((professor) => {
+  professors.map((professor) => {
     if (gene.hasEnoughUnits(professor, selected_subjects)) {
       chosen_professor = professor;
       professor = gene.subtractUnits(professor, selected_subjects);
@@ -85,7 +85,7 @@ if (!chosen_professor) {
 //-----------------------------------------------------------------------------------------------------------------------
 
 //link a subject classroom pair with the chosen_professor
-subject_classroom_professor.forEach((item) => {
+subject_classroom_professor.map((item) => {
   item.professor = chosen_professor;
 });
 //console.log(subject_classroom_professor);
@@ -93,14 +93,14 @@ subject_classroom_professor.forEach((item) => {
 professors_with_preferences = gene.removeNoUnitsProfessors(professors_with_preferences);
 professors = gene.removeNoUnitsProfessors(professors);
 professors_with_no_preferences_remaining = gene.getProfessorWithUnitsRemaining(professors_with_preferences);
-professors_with_no_preferences_remaining.forEach((professor) => {
+professors_with_no_preferences_remaining.map((professor) => {
   gene.popElement(professors_with_preferences, professor);
   professors.push(professor);
 });
-subject_classroom_professor.forEach((item) => {
+subject_classroom_professor.map((item) => {
   gene.popElement(subjects, item.subject);
   if (item.classroom.constructor === Array) {
-    item.classroom.forEach((room) => {
+    item.classroom.map((room) => {
       gene.popElement(classrooms, room);
     });
   } else {
@@ -110,6 +110,6 @@ subject_classroom_professor.forEach((item) => {
 individual.push(subject_classroom_professor);
 c++;
 }
-individual.forEach((item) => {
+individual.map((item) => {
    console.log(item);
 });

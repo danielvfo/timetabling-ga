@@ -8,7 +8,7 @@ module.exports = class Inicialization {
     var csv = fs.readFileSync(__dirname + input, 'utf8');
     var array = csv.split('\r\n');
     var objects_array = [];
-    array.forEach((item, index) => {
+    array.map((item, index) => {
       if (index > 0) { //ignore the first line (table headers)
         var temp = item.split(';');
         if (temp[0]) { //avoiding to include empty entries
@@ -25,7 +25,7 @@ module.exports = class Inicialization {
     var csv = fs.readFileSync(__dirname + input, 'utf8');
     var array = csv.split('\r\n');
     var objects_array = [];
-    array.forEach((item, index) => {
+    array.map((item, index) => {
       if (index > 0) { //ignore the first line (table headers)
         var temp = item.split(';');
         if (temp[0]) { //avoiding to include empty entries
@@ -42,7 +42,7 @@ module.exports = class Inicialization {
     var csv = fs.readFileSync(__dirname + input, 'utf8');
     var array = csv.split('\r\n');
     var objects_array = [];
-    array.forEach((item, index) => {
+    array.map((item, index) => {
       if (index > 0) { //ignore the first line (table headers)
         var temp = item.split(';');
         if (temp[0]) { //avoiding to include empty entries
@@ -57,7 +57,7 @@ module.exports = class Inicialization {
   //Function to count the total number of units in subjects
   countTotalNumberOfSubjectUnits(subjects) {
     var total_units = 0;
-    subjects.forEach((subject) => {
+    subjects.map((subject) => {
       total_units += subject.units;
     });
     return total_units;
@@ -66,7 +66,7 @@ module.exports = class Inicialization {
   //Function to count the total number of professors available units
   countTotalNumberOfProfessorUnits(professors) {
     var total_units = 0;
-    professors.forEach((professor) => {
+    professors.map((professor) => {
       total_units += professor.units;
     });
     return total_units;
